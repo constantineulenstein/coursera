@@ -184,7 +184,7 @@ def run_ttest():
     different = (p < 0.01)
     better = 'university town' if (price_ratio_unis.mean() < price_ratio_non_unis.mean())[0] else 'non-university-town'
     return (different, p , better)
-run_ttest()
+print(run_ttest())
 
 
 # In[ ]:
