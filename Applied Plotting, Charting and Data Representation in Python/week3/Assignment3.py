@@ -43,7 +43,7 @@
 # 
 # *Note: The data given for this assignment is not the same as the data used in the article and as a result the visualizations may look a little different.*
 
-# In[12]:
+# In[79]:
 
 # Use the following data for this assignment:
 
@@ -80,11 +80,13 @@ def updateColors(threshold):
         if data_color[i] < 0: data_color[i] = 0 
     my_cmap = plt.cm.get_cmap('RdBu')
     plt.bar(x_ticks, means, width=0.8, yerr=ci_95, capsize=5, color=my_cmap(data_color))
+    
 
 ###plot bars
 updateColors(40000)
 plt.xticks(x_ticks, years)
 axline = plt.axhline(y=40000, clip_on=False, zorder=1, color='red')
+txt = plt.gca().text(x=5.5, y=40000, s=40000, color='red')
 plt.title('Confidence Interval Interactivity: \nClick the Chart To Recolor')
 #show colorbar
 my_cmap = plt.cm.get_cmap('RdBu')
@@ -96,6 +98,9 @@ cbar.set_label('Color', rotation=270,labelpad=25)
 ###interactivity
 def moveAxHLine(event): 
     axline.set_ydata(event.ydata)
+    #reset the interest data displayal
+    txt.set_position((5.5, event.ydata))
+    txt.set_text(event.ydata)
     updateColors(event.ydata)
       
 plt.gcf().canvas.mpl_connect('button_press_event', moveAxHLine)
