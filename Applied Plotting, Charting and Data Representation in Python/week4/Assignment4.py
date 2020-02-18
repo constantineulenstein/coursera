@@ -44,6 +44,7 @@ import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from statistics import mean
 
 sns.set(style='white')
 
@@ -71,17 +72,40 @@ pop = (pop.set_index('Country or area')[["UN continentalregion[4]", "Population(
 df = (gdp.merge(co2,how='inner', left_index=True, right_index=True)
          .merge(pop,how='inner', left_index=True, right_index=True)
          .apply(lambda x: x.str.replace(',', ''), axis=1))
-df = df[df.CO2 != '..'].apply(pd.to_numeric, errors='ignore').iloc[:30]
+df = df[df.CO2 != '..'].apply(pd.to_numeric, errors='ignore').sort_values("Population(1 July 2018)", ascending=False).iloc[:20]
 
 #create scatter plot of gdp vs co2
-#sns.regplot(df["GDP"], df["CO2"], color="red", alpha=0.4)
 plt.figure()
-df.plot.scatter('GDP', 'CO2', s=df["Population(1 July 2018)"]/1000000, alpha=0.6, picker=5)
+p1 = sns.scatterplot(x="GDP", y="CO2",
+              hue="Continent",
+              data=df,
+              s=df["Population(1 July 2018)"]/1000000,
+              alpha=0.8);
+p1.set(xlabel='Per capita nominal GDP', ylabel='CO2 emmissions in tons per capita', title="Per capita CO2 emmissions vs. GDP of 20 most populous countries in 2018 (population corresponds to circle size)")
 
-#implement clicking
-def onpick(event):
-    origin = df.iloc[event.ind[0]][0]
-    plt.gca().set_title('Selected item came from {}'.format(origin))
+#add country name
+for country in range(0,df.shape[0]):
+     p1.text(df.GDP[country]+0.01, df.CO2[country],
+     df.index[country], horizontalalignment='left',
+     size='xx-small', color='black', weight='semibold')
 
-# tell mpl_connect we want to pass a 'pick_event' into onpick when the event is detected
-plt.gcf().canvas.mpl_connect('pick_event', onpick)
+#add regression line
+def best_fit_slope_and_intercept(xs,ys):
+    m = (((mean(xs)*mean(ys)) - mean(xs*ys)) /
+         ((mean(xs)*mean(xs)) - mean(xs*xs)))
+
+    b = mean(ys) - m*mean(xs)
+
+    return m, b
+
+m, b = best_fit_slope_and_intercept(df["GDP"],df["CO2"])
+regression_line = [(m*x)+b for x in df["GDP"]]
+plt.plot(df["GDP"], regression_line, alpha=0.4)
+#  #implement clicking DOES ONLY WORK IN JUPYTER NOTEBOOK
+# def onpick(event):
+#     origin = df.iloc[event.ind[0]][0]
+#     plt.gca().set_title('Selected item came from {}'.format(origin))
+
+# # tell mpl_connect we want to pass a 'pick_event' into onpick when the event is detected
+# plt.gcf().canvas.mpl_connect('pick_event', onpick)
+plt.show()
